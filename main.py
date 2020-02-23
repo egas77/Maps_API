@@ -1,6 +1,6 @@
 import sys
-
 import requests
+
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtWidgets import QApplication, QMainWindow
@@ -10,6 +10,8 @@ from data.ui.ui_main import Ui_MainWindow
 class Example(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
+        self.setupUi(self)
+
         self.static_api_server = "http://static-maps.yandex.ru/1.x/"
         self.geocoder_server = "http://geocode-maps.yandex.ru/1.x/"
         self.geocoder_key = "40d1649f-0493-4b70-98ba-98533de7710b"
@@ -30,7 +32,22 @@ class Example(QMainWindow, Ui_MainWindow):
             "format": "json"
         }
 
-        self.setupUi(self)
+        self.map_btn.clicked.connect(self.set_map_mode)
+        self.sat_btn.clicked.connect(self.set_sat_mode)
+        self.hybrid_btn.clicked.connect(self.set_hybrid_mode)
+
+        self.load_image()
+
+    def set_map_mode(self):
+        self.params_static_api["l"] = "map"
+        self.load_image()
+
+    def set_sat_mode(self):
+        self.params_static_api["l"] = "sat"
+        self.load_image()
+
+    def set_hybrid_mode(self):
+        self.params_static_api["l"] = "sat,skl"
         self.load_image()
 
     def get_address(self, point):
@@ -52,6 +69,7 @@ class Example(QMainWindow, Ui_MainWindow):
 
     def load_image(self):
         image = self.get_image()
+        self.main_map.setFocus()
         if image:
             pixmap = QPixmap.fromImage(QImage.fromData(image))
             self.main_map.setPixmap(pixmap)

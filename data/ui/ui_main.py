@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'main.ui'
+# Form implementation generated from reading ui file './data\ui\main.ui'
 #
-# Created by: PyQt5 UI code generator 5.13.1
+# Created by: PyQt5 UI code generator 5.12.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -13,15 +13,24 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(650, 450)
+        MainWindow.resize(650, 479)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
         self.gridLayout.setObjectName("gridLayout")
+        self.map_btn = QtWidgets.QPushButton(self.centralwidget)
+        self.map_btn.setObjectName("map_btn")
+        self.gridLayout.addWidget(self.map_btn, 1, 0, 1, 1)
+        self.sat_btn = QtWidgets.QPushButton(self.centralwidget)
+        self.sat_btn.setObjectName("sat_btn")
+        self.gridLayout.addWidget(self.sat_btn, 1, 1, 1, 1)
+        self.hybrid_btn = QtWidgets.QPushButton(self.centralwidget)
+        self.hybrid_btn.setObjectName("hybrid_btn")
+        self.gridLayout.addWidget(self.hybrid_btn, 1, 2, 1, 1)
         self.main_map = QtWidgets.QLabel(self.centralwidget)
         self.main_map.setText("")
         self.main_map.setObjectName("main_map")
-        self.gridLayout.addWidget(self.main_map, 0, 0, 1, 1)
+        self.gridLayout.addWidget(self.main_map, 0, 0, 1, 3)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 650, 21))
@@ -37,3 +46,6 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Maps"))
+        self.map_btn.setText(_translate("MainWindow", "Схема"))
+        self.sat_btn.setText(_translate("MainWindow", "Спутник"))
+        self.hybrid_btn.setText(_translate("MainWindow", "Гибрид"))
