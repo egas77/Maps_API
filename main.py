@@ -15,6 +15,7 @@ class Example(QMainWindow, Ui_MainWindow):
         self.geocoder_key = "40d1649f-0493-4b70-98ba-98533de7710b"
 
         self.toponym = None
+        self.keys_move = [Qt.Key_Down, Qt.Key_Up, Qt.Key_Left, Qt.Key_Right]
 
         self.params_static_api = {
             "ll": "83.775671,53.347664",
@@ -64,6 +65,24 @@ class Example(QMainWindow, Ui_MainWindow):
             if self.params_static_api["z"] < 18:
                 self.params_static_api["z"] += 1
                 self.load_image()
+        elif event.key() in self.keys_move:
+            l1, l2 = map(float, self.params_static_api['ll'].split(','))
+            ind = self.keys_move.index(event.key())
+            change_l = 10 / 2 ** (self.params_static_api["z"])
+            if ind == 0:
+                l2 -= change_l / 2
+            elif ind == 1:
+                l2 += change_l / 2
+            elif ind == 2:
+                l1 -= change_l
+            else:
+                l1 += change_l
+            if not (-180 < l1 <= 180):
+                l1 = (l1 + 180) % 360 - 180
+            if not (-90 < l2 <= 90):
+                l2 = (l2 + 90) % 180 - 90
+            self.params_static_api['ll'] = f'{l1},{l2}'
+            self.load_image()
 
 
 if __name__ == '__main__':
