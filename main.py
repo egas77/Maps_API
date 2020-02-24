@@ -37,6 +37,7 @@ class Example(QMainWindow, Ui_MainWindow):
         self.sat_btn.clicked.connect(self.set_sat_mode)
         self.hybrid_btn.clicked.connect(self.set_hybrid_mode)
         self.search_btn.clicked.connect(self.search)
+        self.reset_search_btn.clicked.connect(self.reset_search)
 
         self.load_image()
 
@@ -50,6 +51,11 @@ class Example(QMainWindow, Ui_MainWindow):
         point = geo_obj["Point"]["pos"].replace(" ", ",")
         self.params_static_api["ll"] = point
         self.params_static_api["pt"] = f'{point},comma'
+        self.load_image()
+
+    def reset_search(self):
+        self.params_static_api["pt"] = ""
+        self.search_line_edit.setText("")
         self.load_image()
 
     def set_map_mode(self):
