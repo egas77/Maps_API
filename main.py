@@ -23,7 +23,8 @@ class Example(QMainWindow, Ui_MainWindow):
             "ll": "83.775671,53.347664",
             "l": "map",
             "size": "650,450",
-            "z": 10
+            "z": 10,
+            "pt": ""
         }
 
         self.params_geocoder_api = {
@@ -35,7 +36,20 @@ class Example(QMainWindow, Ui_MainWindow):
         self.map_btn.clicked.connect(self.set_map_mode)
         self.sat_btn.clicked.connect(self.set_sat_mode)
         self.hybrid_btn.clicked.connect(self.set_hybrid_mode)
+        self.search_btn.clicked.connect(self.search)
 
+        self.load_image()
+
+    def search(self):
+        text = self.search_line_edit.text()  # Адресс поиска
+        if not text:
+            return
+        geo_obj = self.get_toponym(text)
+        if not geo_obj:
+            return
+        point = geo_obj["Point"]["pos"].replace(" ", ",")
+        self.params_static_api["ll"] = point
+        self.params_static_api["pt"] = f'{point},comma'
         self.load_image()
 
     def set_map_mode(self):
@@ -53,12 +67,16 @@ class Example(QMainWindow, Ui_MainWindow):
     def get_address(self, point):
         pass
 
-    def get_toponym(self, address):
-        self.params_geocoder_api["geocode"] = address
+    def get_toponym(self, geocode):
+        self.params_geocoder_api["geocode"] = geocode
         resp = requests.get(self.geocoder_server, params=self.params_geocoder_api)
         if not resp:
             return
-        toponym = resp.json()["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]
+        json_resp = resp.json()['response']
+        if json_resp['GeoObjectCollection']['metaDataProperty']['GeocoderResponseMetaData'][
+            'found'] == '0':  # В случае если звпрос успешен, но результатов нет
+            return
+        toponym = json_resp["GeoObjectCollection"]["featureMember"][0]["GeoObject"]
         return toponym
 
     def get_image(self):

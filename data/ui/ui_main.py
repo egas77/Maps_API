@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file './data\ui\main.ui'
+# Form implementation generated from reading ui file '.\main.ui'
 #
 # Created by: PyQt5 UI code generator 5.12.3
 #
@@ -18,19 +18,25 @@ class Ui_MainWindow(object):
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
         self.gridLayout.setObjectName("gridLayout")
-        self.map_btn = QtWidgets.QPushButton(self.centralwidget)
-        self.map_btn.setObjectName("map_btn")
-        self.gridLayout.addWidget(self.map_btn, 1, 0, 1, 1)
         self.sat_btn = QtWidgets.QPushButton(self.centralwidget)
         self.sat_btn.setObjectName("sat_btn")
-        self.gridLayout.addWidget(self.sat_btn, 1, 1, 1, 1)
+        self.gridLayout.addWidget(self.sat_btn, 2, 1, 1, 1)
         self.hybrid_btn = QtWidgets.QPushButton(self.centralwidget)
         self.hybrid_btn.setObjectName("hybrid_btn")
-        self.gridLayout.addWidget(self.hybrid_btn, 1, 2, 1, 1)
+        self.gridLayout.addWidget(self.hybrid_btn, 2, 2, 1, 1)
         self.main_map = QtWidgets.QLabel(self.centralwidget)
         self.main_map.setText("")
         self.main_map.setObjectName("main_map")
-        self.gridLayout.addWidget(self.main_map, 0, 0, 1, 3)
+        self.gridLayout.addWidget(self.main_map, 1, 0, 1, 3)
+        self.map_btn = QtWidgets.QPushButton(self.centralwidget)
+        self.map_btn.setObjectName("map_btn")
+        self.gridLayout.addWidget(self.map_btn, 2, 0, 1, 1)
+        self.search_btn = QtWidgets.QPushButton(self.centralwidget)
+        self.search_btn.setObjectName("search_btn")
+        self.gridLayout.addWidget(self.search_btn, 0, 2, 1, 1)
+        self.search_line_edit = QtWidgets.QLineEdit(self.centralwidget)
+        self.search_line_edit.setObjectName("search_line_edit")
+        self.gridLayout.addWidget(self.search_line_edit, 0, 0, 1, 2)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 650, 21))
@@ -46,6 +52,7 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Maps"))
-        self.map_btn.setText(_translate("MainWindow", "Схема"))
         self.sat_btn.setText(_translate("MainWindow", "Спутник"))
         self.hybrid_btn.setText(_translate("MainWindow", "Гибрид"))
+        self.map_btn.setText(_translate("MainWindow", "Схема"))
+        self.search_btn.setText(_translate("MainWindow", "Поиск"))
