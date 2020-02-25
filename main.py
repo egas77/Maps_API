@@ -39,18 +39,22 @@ class Example(QMainWindow, Ui_MainWindow):
         self.hybrid_btn.clicked.connect(self.set_hybrid_mode)
         self.search_btn.clicked.connect(self.search)
         self.reset_search_btn.clicked.connect(self.reset_search)
+        self.check_index.toggled.connect(self.show_address)
 
         self.load_image()
 
     def show_address(self, obj=None):
-        if not obj:
+        if not isinstance(obj, dict) and not self.last_searched_address:
             self.address_text.setText('')
             return
-        self.last_searched_address = [
-            obj['metaDataProperty']['GeocoderMetaData']['Address']['formatted'],
-            obj['metaDataProperty']['GeocoderMetaData']['Address'].get('postal_code')
-        ]
+        if isinstance(obj, dict):
+            # если поступил новый запрос обновляем последний найденный адрес
+            self.last_searched_address = [
+                obj['metaDataProperty']['GeocoderMetaData']['Address']['formatted'],
+                obj['metaDataProperty']['GeocoderMetaData']['Address'].get('postal_code')
+            ]
         if self.check_index.isChecked() and self.last_searched_address[1]:
+            # если у объекта существует почтовый индекс и поставлена соответствующая галочка
             self.address_text.setText(', '.join(self.last_searched_address))
         else:
             self.address_text.setText(self.last_searched_address[0])
