@@ -41,6 +41,13 @@ class Example(QMainWindow, Ui_MainWindow):
 
         self.load_image()
 
+    def show_address(self, obj=None):
+        if not obj:
+            self.address_text.setText('')
+            return
+        address = obj['metaDataProperty']['GeocoderMetaData']['Address']['formatted']
+        self.address_text.setText(address)
+
     def search(self):
         text = self.search_line_edit.text()  # Адресс поиска
         if not text:
@@ -48,6 +55,7 @@ class Example(QMainWindow, Ui_MainWindow):
         geo_obj = self.get_toponym(text)
         if not geo_obj:
             return
+        self.show_address(geo_obj)
         point = geo_obj["Point"]["pos"].replace(" ", ",")
         self.params_static_api["ll"] = point
         self.params_static_api["pt"] = f'{point},comma'
@@ -56,6 +64,7 @@ class Example(QMainWindow, Ui_MainWindow):
     def reset_search(self):
         self.params_static_api["pt"] = ""
         self.search_line_edit.setText("")
+        self.show_address()
         self.load_image()
 
     def set_map_mode(self):
