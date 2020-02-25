@@ -18,6 +18,7 @@ class Example(QMainWindow, Ui_MainWindow):
 
         self.toponym = None
         self.keys_move = [Qt.Key_Down, Qt.Key_Up, Qt.Key_Left, Qt.Key_Right]
+        self.last_searched_address = None
 
         self.params_static_api = {
             "ll": "83.775671,53.347664",
@@ -45,8 +46,14 @@ class Example(QMainWindow, Ui_MainWindow):
         if not obj:
             self.address_text.setText('')
             return
-        address = obj['metaDataProperty']['GeocoderMetaData']['Address']['formatted']
-        self.address_text.setText(address)
+        self.last_searched_address = [
+            obj['metaDataProperty']['GeocoderMetaData']['Address']['formatted'],
+            obj['metaDataProperty']['GeocoderMetaData']['Address'].get('postal_code')
+        ]
+        if self.check_index.isChecked() and self.last_searched_address[1]:
+            self.address_text.setText(', '.join(self.last_searched_address))
+        else:
+            self.address_text.setText(self.last_searched_address[0])
 
     def search(self):
         text = self.search_line_edit.text()  # Адресс поиска
@@ -64,6 +71,7 @@ class Example(QMainWindow, Ui_MainWindow):
     def reset_search(self):
         self.params_static_api["pt"] = ""
         self.search_line_edit.setText("")
+        self.last_searched_address = None
         self.show_address()
         self.load_image()
 
