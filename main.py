@@ -6,6 +6,10 @@ from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtWidgets import QApplication, QMainWindow
 from data.ui.ui_main import Ui_MainWindow
 
+import math
+
+from math import *
+
 
 class Example(QMainWindow, Ui_MainWindow):
     def __init__(self):
@@ -16,15 +20,17 @@ class Example(QMainWindow, Ui_MainWindow):
         self.geocoder_server = "http://geocode-maps.yandex.ru/1.x/"
         self.geocoder_key = "40d1649f-0493-4b70-98ba-98533de7710b"
 
-        self.toponym = None
         self.keys_move = [Qt.Key_Down, Qt.Key_Up, Qt.Key_Left, Qt.Key_Right]
         self.last_searched_address = None
 
+        self.longitude_on_one_px = 360 / 256  # Градусов на 1 пикселей долготы
+        self.latitude_on_one_px = 180 / 256  # Градусов на 1 пикселей широты
+
         self.params_static_api = {
-            "ll": "83.775671,53.347664",
+            "ll": "0,0",
             "l": "map",
             "size": "650,450",
-            "z": 10,
+            "z": 0,
             "pt": ""
         }
 
@@ -69,6 +75,15 @@ class Example(QMainWindow, Ui_MainWindow):
         self.show_address(geo_obj)
         point = geo_obj["Point"]["pos"].replace(" ", ",")
         self.params_static_api["ll"] = point
+        self.params_static_api["pt"] = f'{point},comma'
+        self.load_image()
+
+    def click_on_object(self, coords):
+        point = ','.join(list(map(str, coords)))
+        geo_obj = self.get_toponym(point)
+        if not geo_obj:
+            return
+        self.show_address(geo_obj)
         self.params_static_api["pt"] = f'{point},comma'
         self.load_image()
 
@@ -146,6 +161,51 @@ class Example(QMainWindow, Ui_MainWindow):
                 l2 = (l2 + 90) % 180 - 90
             self.params_static_api['ll'] = f'{l1},{l2}'
             self.load_image()
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            cur_longitude, cur_latitude = list(map(float, self.params_static_api['ll'].split(',')))
+            print(cur_longitude, cur_latitude)
+            X, Y = self.convert_on_mercator(cur_longitude, cur_latitude)
+            print(X, Y)
+            Long, Lat = self.convert_on_long_lat(X, Y)
+            print(Long, Lat)
+
+    def convert_on_long_lat(self, marcator_x, mercator_y):
+        Y = mercator_y
+        X = marcator_x
+        a = 6378137
+        b = 6356752.314
+        f = (a - b) / a
+        e = sqrt(2 * f - f ** 2)
+        pih = pi / 2
+        ts = exp(-Y / a)
+        phi = pih - 2 * atan(ts)
+        i = 0
+        dphi = 1
+        while fabs(dphi) > 0.000000000001 and i < 1500:
+            con = e * sin(phi)
+            dphi = pih - 2 * atan(ts * (1 - con) / (1 + con) ** e) - phi
+            phi = phi + dphi
+        rLong = X / a
+        rLat = phi
+        Long = rLong * 180 / pi
+        Lat = rLat * 180 / pi
+
+        return Long, Lat
+
+    def convert_on_mercator(self, long, lat):
+        Lat = lat
+        Long = long
+        rLat = Lat * pi / 180
+        rLong = Long * pi / 180
+        a = 6378137
+        b = 6356752.3142
+        f = (a - b) / a
+        e = sqrt(2 * f - f ** 2)
+        X = a * rLong
+        Y = a * log(tan(pi / 4 + rLat / 2) * ((1 - e * sin(rLat)) / (1 + e * sin(rLat))) ** (e / 2))
+        return X, Y
 
 
 if __name__ == '__main__':
