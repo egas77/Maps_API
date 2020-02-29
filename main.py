@@ -165,47 +165,16 @@ class Example(QMainWindow, Ui_MainWindow):
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
             cur_longitude, cur_latitude = list(map(float, self.params_static_api['ll'].split(',')))
-            print(cur_longitude, cur_latitude)
-            X, Y = self.convert_on_mercator(cur_longitude, cur_latitude)
-            print(X, Y)
-            Long, Lat = self.convert_on_long_lat(X, Y)
-            print(Long, Lat)
+            mouse_pox_x, mouse_pox_y = event.x() - self.main_map.x(), event.y() - self.main_map.y()
+            dx = mouse_pox_x - self.main_map.width() / 2
+            dy = mouse_pox_y - self.main_map.height() / 2
 
-    def convert_on_long_lat(self, marcator_x, mercator_y):
-        Y = mercator_y
-        X = marcator_x
-        a = 6378137
-        b = 6356752.314
-        f = (a - b) / a
-        e = sqrt(2 * f - f ** 2)
-        pih = pi / 2
-        ts = exp(-Y / a)
-        phi = pih - 2 * atan(ts)
-        i = 0
-        dphi = 1
-        while fabs(dphi) > 0.000000000001 and i < 1500:
-            con = e * sin(phi)
-            dphi = pih - 2 * atan(ts * (1 - con) / (1 + con) ** e) - phi
-            phi = phi + dphi
-        rLong = X / a
-        rLat = phi
-        Long = rLong * 180 / pi
-        Lat = rLat * 180 / pi
-
-        return Long, Lat
-
-    def convert_on_mercator(self, long, lat):
-        Lat = lat
-        Long = long
-        rLat = Lat * pi / 180
-        rLong = Long * pi / 180
-        a = 6378137
-        b = 6356752.3142
-        f = (a - b) / a
-        e = sqrt(2 * f - f ** 2)
-        X = a * rLong
-        Y = a * log(tan(pi / 4 + rLat / 2) * ((1 - e * sin(rLat)) / (1 + e * sin(rLat))) ** (e / 2))
-        return X, Y
+            find_lon = (dx * (self.longitude_on_one_px / (2 ** self.params_static_api["z"])) +
+                        cur_longitude)
+            find_lat = (-dy *
+                        (self.latitude_on_one_px / (2 ** self.params_static_api["z"])) * 1.25 +
+                        cur_latitude)
+            self.click_on_object((find_lon, find_lat))
 
 
 if __name__ == '__main__':
