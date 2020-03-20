@@ -11,12 +11,33 @@ import math
 from math import *
 
 
+def lonlat_distance(a, b):
+    degree_to_meters_factor = 111 * 1000  # 111 километров в метрах
+    a_lon, a_lat = a
+    b_lon, b_lat = b
+
+    # Берем среднюю по широте точку и считаем коэффициент для нее.
+    radians_lattitude = math.radians((a_lat + b_lat) / 2.)
+    lat_lon_factor = math.cos(radians_lattitude)
+
+    # Вычисляем смещения в метрах по вертикали и горизонтали.
+    dx = abs(a_lon - b_lon) * degree_to_meters_factor * lat_lon_factor
+    dy = abs(a_lat - b_lat) * degree_to_meters_factor
+
+    # Вычисляем расстояние между точками.
+    distance = math.sqrt(dx * dx + dy * dy)
+
+    return distance
+
+
 class Example(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
 
         self.static_api_server = "http://static-maps.yandex.ru/1.x/"
+        self.search_api_server = "https://search-maps.yandex.ru/v1/"
+        self.search_key = "dda3ddba-c9ea-4ead-9010-f43fbc15c6e3"
         self.geocoder_server = "http://geocode-maps.yandex.ru/1.x/"
         self.geocoder_key = "40d1649f-0493-4b70-98ba-98533de7710b"
 
@@ -38,6 +59,15 @@ class Example(QMainWindow, Ui_MainWindow):
             "apikey": self.geocoder_key,
             "geocode": None,
             "format": "json"
+        }
+
+        self.search_params = {
+            "apikey": self.search_key,
+            "text": "",
+            "lang": "ru_RU",
+            "type": "biz",
+            "ll": "0, 0",
+            'results': 1
         }
 
         self.map_btn.clicked.connect(self.set_map_mode)
@@ -78,7 +108,7 @@ class Example(QMainWindow, Ui_MainWindow):
         self.params_static_api["pt"] = f'{point},comma'
         self.load_image()
 
-    def click_on_object(self, coords):
+    def left_click_on_object(self, coords):
         point = ','.join(list(map(str, coords)))
         geo_obj = self.get_toponym(point)
         if not geo_obj:
@@ -134,6 +164,37 @@ class Example(QMainWindow, Ui_MainWindow):
             pixmap = QPixmap.fromImage(QImage.fromData(image))
             self.main_map.setPixmap(pixmap)
 
+    def get_biz(self, point, address):
+        self.search_params['ll'] = point
+        self.search_params['text'] = address
+        resp = requests.get(self.search_api_server, params=self.search_params)
+        if not resp:
+            return
+        json_resp = resp.json()
+        organizations = json_resp["features"]
+        if not organizations:
+            return
+        organization = organizations[0]
+        point_org = tuple(organization["geometry"]["coordinates"])
+        if lonlat_distance(tuple(map(float, point.split(','))), point_org) > 50:
+            return
+        return point_org
+
+    def right_click_on_object(self, coords):
+        point = ','.join(list(map(str, coords)))
+        obj = self.get_toponym(point)
+        if not obj:
+            return
+        address = obj['metaDataProperty']['GeocoderMetaData']['Address']['formatted']
+        biz_obj = self.get_biz(point, address)
+        if not biz_obj:
+            return
+        point = ','.join(list(map(str, biz_obj)))
+        geo_obj = self.get_toponym(point)
+        self.show_address(geo_obj)
+        self.params_static_api["pt"] = f'{point},comma'
+        self.load_image()
+
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_PageDown:
             if self.params_static_api["z"] > 0:
@@ -146,7 +207,7 @@ class Example(QMainWindow, Ui_MainWindow):
         elif event.key() in self.keys_move:
             l1, l2 = map(float, self.params_static_api['ll'].split(','))
             ind = self.keys_move.index(event.key())
-            change_l = 10 / 2 ** (self.params_static_api["z"])
+            change_l = 360 / 2 ** (self.params_static_api["z"])
             if ind == 0:
                 l2 -= change_l / 2
             elif ind == 1:
@@ -163,7 +224,7 @@ class Example(QMainWindow, Ui_MainWindow):
             self.load_image()
 
     def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
+        if event.button() in (Qt.LeftButton, Qt.RightButton):
             cur_longitude, cur_latitude = list(map(float, self.params_static_api['ll'].split(',')))
             mouse_pox_x, mouse_pox_y = event.x() - self.main_map.x(), event.y() - self.main_map.y()
             dx = mouse_pox_x - self.main_map.width() / 2
@@ -174,7 +235,10 @@ class Example(QMainWindow, Ui_MainWindow):
             find_lat = (-dy *
                         (self.latitude_on_one_px / (2 ** self.params_static_api["z"])) * 1.25 +
                         cur_latitude)
-            self.click_on_object((find_lon, find_lat))
+            if event.button() == Qt.LeftButton:
+                self.left_click_on_object((find_lon, find_lat))
+            else:
+                self.right_click_on_object((find_lon, find_lat))
 
 
 if __name__ == '__main__':
