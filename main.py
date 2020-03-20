@@ -163,7 +163,7 @@ class Example(QMainWindow, Ui_MainWindow):
             self.load_image()
 
     def mousePressEvent(self, event):
-        if event.button() in (Qt.LeftButton, Qt.RightButton):
+        if event.button() == Qt.LeftButton:
             cur_longitude, cur_latitude = list(map(float, self.params_static_api['ll'].split(',')))
             mouse_pox_x, mouse_pox_y = event.x() - self.main_map.x(), event.y() - self.main_map.y()
             dx = mouse_pox_x - self.main_map.width() / 2
@@ -174,10 +174,7 @@ class Example(QMainWindow, Ui_MainWindow):
             find_lat = (-dy *
                         (self.latitude_on_one_px / (2 ** self.params_static_api["z"])) * 1.25 +
                         cur_latitude)
-            if event.button() == Qt.LeftButton:
-                self.click_on_object((find_lon, find_lat))
-
-
+            self.click_on_object((find_lon, find_lat))
 
 
 if __name__ == '__main__':
