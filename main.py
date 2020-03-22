@@ -79,21 +79,25 @@ class Example(QMainWindow, Ui_MainWindow):
 
         self.load_image()
 
-    def show_address(self, obj=None):
+    def show_address(self, obj=None, name_organization=None):
         if not isinstance(obj, dict) and not self.last_searched_address:
             self.address_text.setText('')
             return
         if isinstance(obj, dict):
             # если поступил новый запрос обновляем последний найденный адрес
             self.last_searched_address = [
-                obj['metaDataProperty']['GeocoderMetaData']['Address']['formatted'],
-                obj['metaDataProperty']['GeocoderMetaData']['Address'].get('postal_code')
-            ]
-        if self.check_index.isChecked() and self.last_searched_address[1]:
-            # если у объекта существует почтовый индекс и поставлена соответствующая галочка
-            self.address_text.setText(', '.join(self.last_searched_address))
-        else:
-            self.address_text.setText(self.last_searched_address[0])
+                obj['metaDataProperty']['GeocoderMetaData']['Address']['formatted']]
+            if name_organization:
+                self.last_searched_address.append(name_organization)
+            postal_code = obj['metaDataProperty']['GeocoderMetaData']['Address'].get('postal_code',
+                                                                                     ' ')
+            self.last_searched_address.append(postal_code)
+        if self.last_searched_address:
+            if self.check_index.isChecked():
+                self.address_text.setText(', '.join(self.last_searched_address))
+            else:
+                self.address_text.setText(
+                    ','.join(self.last_searched_address[:len(self.last_searched_address) - 1]))
 
     def search(self):
         text = self.search_line_edit.text()  # Адресс поиска
@@ -176,9 +180,10 @@ class Example(QMainWindow, Ui_MainWindow):
             return
         organization = organizations[0]
         point_org = tuple(organization["geometry"]["coordinates"])
+        name_organization = organization['properties']['name']
         if lonlat_distance(tuple(map(float, point.split(','))), point_org) > 50:
-            return
-        return point_org
+            return None, None
+        return point_org, name_organization
 
     def right_click_on_object(self, coords):
         point = ','.join(list(map(str, coords)))
@@ -186,12 +191,12 @@ class Example(QMainWindow, Ui_MainWindow):
         if not obj:
             return
         address = obj['metaDataProperty']['GeocoderMetaData']['Address']['formatted']
-        biz_obj = self.get_biz(point, address)
+        biz_obj, name_organization = self.get_biz(point, address)
         if not biz_obj:
             return
         point = ','.join(list(map(str, biz_obj)))
         geo_obj = self.get_toponym(point)
-        self.show_address(geo_obj)
+        self.show_address(geo_obj, name_organization=name_organization)
         self.params_static_api["pt"] = f'{point},comma'
         self.load_image()
 
