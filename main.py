@@ -214,13 +214,13 @@ class Example(QMainWindow, Ui_MainWindow):
             ind = self.keys_move.index(event.key())
             change_l = 360 / 2 ** (self.params_static_api["z"])
             if ind == 0:
-                l2 -= change_l / 2
+                l2 -= change_l / 8
             elif ind == 1:
-                l2 += change_l / 2
+                l2 += change_l / 8
             elif ind == 2:
-                l1 -= change_l
+                l1 -= change_l / 4
             else:
-                l1 += change_l
+                l1 += change_l / 4
             if not (-180 < l1 <= 180):
                 l1 = (l1 + 180) % 360 - 180
             if not (-90 < l2 <= 90):
